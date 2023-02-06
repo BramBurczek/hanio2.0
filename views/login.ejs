@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  </head>
+  <body>
+    <div class="container" style="margin-top: 50px;">
+      <h1>Hanio.de</h1>
+    </div>
+<div class="container" style="margin-top: 50px;">
+  <h2>Anmelden</h2>
+  <form action="/login" method="post">
+  <div class="form-group">
+    <label for="email">Email</label>
+    <input type="email" id="email "class="form-control" name="email" placeholder="Email eingeben" required>
+  </div>
+  <div class="form-group">
+    <label for="password">Passwort</label>
+    <input type="password" class="form-control" id="password" name="password" placeholder="Passwort eingeben" required>
+  </div>
+  <button type="submit" class="btn btn-primary">Anmelden</button>
+  </form>
+  <div class="form-group" style="margin-top: 10px;">
+    <a href="/register">Registrieren</a>
+  </div>
+  <% if (messages.error) { %>
+    <%= messages.error %>
+  <% } %>
+</div>
+</body>
+</html>
