@@ -7,7 +7,7 @@ document.write(`
 <div class="collapse navbar-collapse" id="navbarNav">
   <ul class="navbar-nav">
     <li class="nav-item active">
-      <a class="nav-link" href="#">Übersicht<span class="sr-only">(current)</span></a>
+<!--      <a class="nav-link" href="#">Übersicht<span class="sr-only">(current)</span></a>
     </li>
     <li class="nav-item">
       <a class="nav-link" href="#">Mathematik</a>
@@ -23,7 +23,7 @@ document.write(`
       </li>
   </ul>
 
-  <!-- <div class="navbar-nav ml-auto">
+  <div class="navbar-nav ml-auto">
   <button id = "anmbtt" class="btn btn-outline-success my-2 my-sm-0"><span>Anmelden</span></button>
   <script>
   document.getElementById("anmbtt").addEventListener("click", function() {

@@ -3,11 +3,6 @@ const app = express();
 
 app.use(express.static(__dirname + '/'));
 
-// app.get("*", (req, res) => {
-//   res.sendFile(__dirname + "/index.html");
-// });
-
-
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config()
 }
@@ -18,6 +13,21 @@ const flash = require('express-flash')
 const session = require('express-session')
 const methodOverride = require('method-override')
 
+const mongoose = require("mongoose")
+mongoose.set('strictQuery', false);
+
+
+const User = require("./User")
+
+mongoose.connect("mongodb://localhost/userdb", () => {
+  console.log("conncected")
+},
+e => console.error(e)
+)
+
+
+
+
 const initializePassport = require('./passport-config')
 initializePassport(
   passport,
@@ -25,8 +35,9 @@ initializePassport(
   id => users.find(user => user.id === id)
 )
 
-const users = []
 
+
+const users = []
 
 app.set('view-engine', 'ejs')
 app.use(express.urlencoded({ extended: false }))
@@ -65,6 +76,9 @@ app.get('/register', checkNotAuthenticated, (req, res) => {
 app.post('/register', checkNotAuthenticated, async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, 10)
+    const user = await User.create({ id: Date.now().toString(), name: req.body.name, email: req.body.email, password: hashedPassword })
+    await user.save()
+    console.log(user)
     users.push({
       id: Date.now().toString(),
       name: req.body.name,
