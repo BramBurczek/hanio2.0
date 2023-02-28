@@ -7,7 +7,7 @@ document.write(`
             <div class="form-group">
               <input type="text" class="form-control answer" />
             </div>
-            <button class="btn btn-primary btn-block check-answer">Prüfen</button>
+            <button type = "submit" class="btn btn-outline-success my-2 my-sm-0 check-answer">Prüfen</button>
             <p class="result mt-2"></p>
           </div>
         </div>
