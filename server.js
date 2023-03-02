@@ -76,7 +76,7 @@ const authenticateUser = async (email, password, done) => {
   })
 
 app.get('/', checkAuthenticated,(req, res, next) => {
-  User.find({}).sort({score: -1}).limit(3).exec(function (err, entries) {
+  User.find({}).sort({score: -1}).limit(5).exec(function (err, entries) {
     let userQuery = req.query.username;
     if (err) {
         res.send('Error fetching leaderboard entries from the database.');
