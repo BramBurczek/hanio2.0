@@ -15,6 +15,7 @@ class ArithmeticQuiz extends HTMLElement {
       });
   
       this.generateQuestion();
+
     }
   
     generateQuestion() {
@@ -26,8 +27,20 @@ class ArithmeticQuiz extends HTMLElement {
     }
   
     checkAnswer() {
-      if (Number(this._answer.value) === this._correctAnswer) {
+      const answer = Number(this._answer.value);
+      if (answer === this._correctAnswer) {
         this._result.textContent = 'Korrekt!';
+        fetch('/', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+        })
+        location.reload()
+          .then(response => {
+            if (!response.ok) throw new Error('Failed to increase user score');
+            return response.json();
+          })
+          .then(data => console.log(data))
+          .catch(error => console.error(error));
       } else {
         this._result.textContent = 'Inkorrekt!';
       }

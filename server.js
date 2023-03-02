@@ -1,17 +1,18 @@
 const express = require("express");
+const cookieParser = require('cookie-parser')
+
+
 const app = express();
 
+
 app.use(express.static(__dirname + '/'));
+
+const bodyParser = require('body-parser');
+app.use(bodyParser.json());
 
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config()
 }
-
-const bcrypt = require('bcrypt')
-const passport = require('passport')
-const flash = require('express-flash')
-const session = require('express-session')
-const methodOverride = require('method-override')
 
 const mongoose = require("mongoose")
 mongoose.set('strictQuery', false);
@@ -26,6 +27,28 @@ mongoose.connect("mongodb://localhost/userdb", () => {
 e => console.error(e)
 )
 
+const session = require('express-session')
+
+const bcrypt = require('bcrypt')
+const passport = require('passport')
+const flash = require('express-flash')
+const methodOverride = require('method-override')
+
+app.set('view-engine', 'ejs')
+app.use(express.urlencoded({ extended: false }))
+app.use(flash())
+app.use(cookieParser('process.env.SESSION_SECRET'));
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie : {
+    expires: false,
+    }
+}))
+app.use(passport.initialize())
+app.use(passport.session())
+app.use(methodOverride('_method'))
 
 const LocalStrategy = require('passport-local').Strategy
 
@@ -52,41 +75,13 @@ const authenticateUser = async (email, password, done) => {
     return done(null, User.findOne({id: id}))
   })
 
-//-----------hier noch machen--------
-// module.export = {
-//   updateScore: function(idUser){
-//   User.findOneAndUpdate({id: idUser}, {$inc: {score: 1}}, {new: true}, function(err, doc) {
-//     if (err) {
-//         console.log("Something wrong when updating data!");
-//     }
-//     console.log(doc);
-//   })
-// }
-// }
-
-
-
-
-app.set('view-engine', 'ejs')
-app.use(express.urlencoded({ extended: false }))
-app.use(flash())
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false
-}))
-app.use(passport.initialize())
-app.use(passport.session())
-app.use(methodOverride('_method'))
-
 app.get('/', checkAuthenticated,(req, res, next) => {
-  User.find({}).sort({score: -1}).limit(10).exec(function (err, entries) {
+  User.find({}).sort({score: -1}).limit(3).exec(function (err, entries) {
+    let userQuery = req.query.username;
     if (err) {
         res.send('Error fetching leaderboard entries from the database.');
     } else {  
-        res.locals.currentUser = req.user;
-        console.log(res.locals.currentUser)
-        res.render('index.ejs', {entries: entries, user: req.user});
+      res.render('index.ejs', {entries: entries, user: userQuery});
     }
 });
 })
@@ -101,11 +96,15 @@ app.get('/index', checkNotAuthenticated, (req, res) => {
 
 
 app.post('/login', checkNotAuthenticated, passport.authenticate('local', {
-  successRedirect: '/',
   failureRedirect: '/login',
   failureFlash: true,
   session: true
-}))
+}),
+function(req, res) {
+  globalThis.globalusername = req.user.name;
+  res.redirect('/?username='+req.user.name);
+});
+
 
 app.get('/register', checkNotAuthenticated, (req, res) => {
   res.render('register.ejs')
@@ -115,7 +114,7 @@ app.get('/register', checkNotAuthenticated, (req, res) => {
 app.post('/register', checkNotAuthenticated, async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, 10)
-    const user = await User.create({ id: Date.now().toString(), name: req.body.name, email: req.body.email, password: hashedPassword })
+    const user = await User.create({ id: Date.now().toString(), name: req.body.name, email: req.body.email, password: hashedPassword, score: 0})
     await user.save()
     res.redirect('/login')
   } catch {
@@ -123,13 +122,29 @@ app.post('/register', checkNotAuthenticated, async (req, res) => {
   }
 })
 
+app.put('/', async (req, res) => {
+  try {
+      const userId = globalThis.globalusername
+      User.findOneAndUpdate({ name: userId },{ $inc: { score: 1 }},{
+        new: true
+      }, (err, user) => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log(user);
+        }
+      })
 
+      res.status(200).json({ message: 'User score updated' });
 
-
-
+  } 
+  catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 app.delete('/logout', function(req, res, next) {
-  console.log(req.user)
   req.logout(function(err) {
     if (err) { return next(err); }
     res.redirect('/login');
