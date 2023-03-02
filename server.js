@@ -77,7 +77,7 @@ const authenticateUser = async (email, password, done) => {
 
 app.get('/', checkAuthenticated,(req, res, next) => {
   User.find({}).sort({score: -1}).limit(5).exec(function (err, entries) {
-    let userQuery = req.query.username;
+    let userQuery = global.globalusername;
     if (err) {
         res.send('Error fetching leaderboard entries from the database.');
     } else {  
@@ -109,6 +109,11 @@ function(req, res) {
 app.get('/register', checkNotAuthenticated, (req, res) => {
   res.render('register.ejs')
 })
+
+
+app.get('/mehr', function(req, res) {
+  res.render('mehr.ejs');
+});
 
 
 app.post('/register', checkNotAuthenticated, async (req, res) => {
